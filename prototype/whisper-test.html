@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ブラウザ内Whisper 発音チェック 試作(プロトタイプ)</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif; max-width: 760px; margin: 24px auto; padding: 0 16px; line-height: 1.6; color: #222; }
+  h1 { font-size: 1.3rem; }
+  .box { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-bottom: 16px; background: #fafafa; }
+  label { display: block; font-weight: bold; margin-bottom: 4px; }
+  input[type=text] { width: 100%; padding: 8px; font-size: 1rem; box-sizing: border-box; }
+  select, button { font-size: 1rem; padding: 8px 12px; margin-right: 8px; margin-top: 8px; }
+  button { cursor: pointer; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  #status { white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 0.85rem; background: #111; color: #ddd; padding: 12px; border-radius: 6px; height: 180px; overflow-y: auto; }
+  .result { font-size: 1.1rem; padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 6px; margin-top: 8px; }
+  .word-ok { color: #1a7a1a; }
+  .word-ng { color: #c0392b; text-decoration: underline wavy; }
+  .metric { display: inline-block; margin-right: 16px; font-size: 0.9rem; color: #555; }
+  .warn { color: #b8860b; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>🎙 ブラウザ内Whisper 発音チェック 試作(プロトタイプ)</h1>
+<p>
+  これは English-LevelUp-Reader の発音チェック機能について、<strong>クラウドAPIを使わずブラウザだけで
+  音声認識(Whisper)を動かす方式</strong>が、実用に足る精度・速度で動くかを確認するための試作品です。<br>
+  <span class="warn">⚠ このページ単体では完結しません。</span>
+  初回はモデルファイル(数十MB)を Hugging Face のサーバーからダウンロードするため、
+  <strong>インターネット接続が必要</strong>です(2回目以降はブラウザにキャッシュされるためオフラインでも動作します)。
+</p>
+
+<div class="box">
+  <h3>① お手本文</h3>
+  <label for="target">読み上げる/発音する英文(自由に書き換えてテストしてください)</label>
+  <input type="text" id="target" value="I would like to have a cup of coffee, please.">
+</div>
+
+<div class="box">
+  <h3>② モデルを選ぶ</h3>
+  <select id="modelSelect">
+    <option value="Xenova/whisper-tiny.en">whisper-tiny.en(軽量・高速・英語専用)</option>
+    <option value="Xenova/whisper-base.en">whisper-base.en(やや重い・高精度・英語専用)</option>
+  </select>
+  <button id="loadBtn">① モデルを読み込む</button>
+</div>
+
+<div class="box">
+  <h3>③ 発音して認識する</h3>
+  <button id="recBtn" disabled>🎤 録音開始</button>
+  <button id="stopBtn" disabled>■ 録音停止して認識</button>
+  <div class="result" id="resultBox">(まだ認識結果はありません)</div>
+  <div id="metrics"></div>
+</div>
+
+<div class="box">
+  <h3>ログ</h3>
+  <div id="status">準備中...</div>
+</div>
+
+<script type="module">
+  import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+  // モデルファイルは Hugging Face Hub から取得(ブラウザキャッシュされる)
+  env.allowLocalModels = false;
+
+  const statusEl = document.getElementById('status');
+  const resultBox = document.getElementById('resultBox');
+  const metricsEl = document.getElementById('metrics');
+  const loadBtn = document.getElementById('loadBtn');
+  const recBtn = document.getElementById('recBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const modelSelect = document.getElementById('modelSelect');
+  const targetInput = document.getElementById('target');
+
+  function log(msg) {
+    const t = new Date().toLocaleTimeString();
+    statusEl.textContent += `\n[${t}] ${msg}`;
+    statusEl.scrollTop = statusEl.scrollHeight;
+    console.log(msg);
+  }
+
+  let transcriber = null;
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let audioContext = null;
+
+  loadBtn.addEventListener('click', async () => {
+    loadBtn.disabled = true;
+    const modelName = modelSelect.value;
+    log(`モデル "${modelName}" の読み込みを開始します(初回はダウンロードに時間がかかります)...`);
+    const t0 = performance.now();
+    try {
+      transcriber = await pipeline('automatic-speech-recognition', modelName, {
+        progress_callback: (p) => {
+          if (p.status === 'progress' && p.file) {
+            log(`  ダウンロード中: ${p.file} ${p.progress ? p.progress.toFixed(1) + '%' : ''}`);
+          }
+        }
+      });
+      const t1 = performance.now();
+      log(`✅ モデル読み込み完了(${((t1 - t0) / 1000).toFixed(1)}秒)`);
+      recBtn.disabled = false;
+    } catch (e) {
+      log(`❌ モデル読み込みに失敗しました: ${e.message}`);
+      log('ヒント: インターネット接続、または huggingface.co / cdn.jsdelivr.net への接続がブロックされていないか確認してください。');
+      loadBtn.disabled = false;
+    }
+  });
+
+  recBtn.addEventListener('click', async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+      mediaRecorder.start();
+      log('🎤 録音開始。お手本文を声に出して読んでください。');
+      recBtn.disabled = true;
+      stopBtn.disabled = false;
+    } catch (e) {
+      log(`❌ マイクにアクセスできませんでした: ${e.message}`);
+      log('ヒント: このページを http://localhost 経由(file://ではなく)で開いていますか?ブラウザにマイク使用を許可しましたか?');
+    }
+  });
+
+  stopBtn.addEventListener('click', () => {
+    stopBtn.disabled = true;
+    mediaRecorder.addEventListener('stop', onRecordingStop);
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  });
+
+  async function onRecordingStop() {
+    log('録音停止。音声を16kHzモノラルに変換して認識します...');
+    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+    const arrayBuffer = await blob.arrayBuffer();
+
+    if (!audioContext) audioContext = new AudioContext({ sampleRate: 16000 });
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+    const audioData = audioBuffer.getChannelData(0);
+
+    const t0 = performance.now();
+    try {
+      const output = await transcriber(audioData, { language: 'english', task: 'transcribe' });
+      const t1 = performance.now();
+      const transcript = output.text.trim();
+      log(`✅ 認識完了(${((t1 - t0) / 1000).toFixed(2)}秒): "${transcript}"`);
+      showResult(transcript, (t1 - t0) / 1000);
+    } catch (e) {
+      log(`❌ 認識に失敗しました: ${e.message}`);
+    }
+    recBtn.disabled = false;
+  }
+
+  // 簡易な単語一致チェック(発音チェック機能が成立しそうかの目視確認用。本実装のロジックではない)
+  function showResult(transcript, seconds) {
+    const target = targetInput.value.trim();
+    const norm = (s) => s.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/).filter(Boolean);
+    const targetWords = norm(target);
+    const gotWords = norm(transcript);
+
+    let html = `<div><strong>認識結果:</strong> "${transcript}"</div><div style="margin-top:8px;"><strong>お手本との単語比較:</strong> `;
+    const gotSet = new Set(gotWords);
+    let matchCount = 0;
+    for (const w of targetWords) {
+      const ok = gotSet.has(w);
+      if (ok) matchCount++;
+      html += `<span class="${ok ? 'word-ok' : 'word-ng'}">${w}</span> `;
+    }
+    html += '</div>';
+    resultBox.innerHTML = html;
+
+    const accuracy = targetWords.length ? (matchCount / targetWords.length * 100).toFixed(0) : 0;
+    metricsEl.innerHTML = `
+      <span class="metric">⏱ 認識時間: ${seconds.toFixed(2)}秒</span>
+      <span class="metric">📊 単語一致率(簡易): ${accuracy}%(${matchCount}/${targetWords.length})</span>
+    `;
+  }
+
+  log('準備完了。まず「① モデルを読み込む」を押してください。');
+</script>
+</body>
+</html>
