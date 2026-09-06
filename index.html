@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English LevelUp Reader</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%96%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>📖 English LevelUp Reader</h1>
+    <p class="subtitle">日常会話から少しずつレベルアップする英語読解・リスニング練習</p>
+  </header>
+
+  <main id="app">
+    <!-- レベル一覧画面 -->
+    <section id="view-levels" class="view">
+      <h2>レベルを選ぶ</h2>
+      <div id="level-grid" class="level-grid"></div>
+    </section>
+
+    <!-- トピック一覧画面 -->
+    <section id="view-topics" class="view" hidden>
+      <button class="back-btn" data-back="levels">← レベル一覧へ戻る</button>
+      <h2 id="topics-title"></h2>
+      <div id="topic-list" class="topic-list"></div>
+    </section>
+
+    <!-- レッスン(文単位)画面 -->
+    <section id="view-lesson" class="view" hidden>
+      <button class="back-btn" data-back="topics">← トピック一覧へ戻る</button>
+      <div id="lesson-progress" class="lesson-progress"></div>
+      <div class="lesson-card">
+        <p class="lesson-en" id="lesson-en"></p>
+        <p class="lesson-ja" id="lesson-ja"></p>
+        <div class="vocab-list" id="lesson-vocab"></div>
+        <div class="lesson-actions">
+          <button id="btn-speak">🔊 読み上げる</button>
+          <label class="rate-control">
+            速度
+            <select id="speak-rate">
+              <option value="0.7">ゆっくり</option>
+              <option value="1" selected>ふつう</option>
+              <option value="1.2">はやい</option>
+            </select>
+          </label>
+        </div>
+        <div class="pronunciation-box">
+          <strong>🎤 発音チェック</strong>
+          <p class="coming-soon">
+            準備中です。ブラウザ内で音声認識(Whisper)を動かす試作を検証中のため、この機能はまだ有効化していません。
+            試作は <a href="prototype/whisper-test.html">prototype/whisper-test.html</a> で確認できます。
+          </p>
+        </div>
+        <div class="lesson-nav">
+          <button id="btn-prev">← 前の文</button>
+          <button id="btn-done">✓ できた(記録する)</button>
+          <button id="btn-next">次の文 →</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>進捗はこのブラウザの中だけに保存されます(他の端末とは共有されません)。</p>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

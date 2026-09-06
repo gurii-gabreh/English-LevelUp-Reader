@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "dialect": "en-US",
+  "levels": [
+    {
+      "id": 1,
+      "title": "挨拶・自己紹介",
+      "titleEn": "Greetings & Self-introduction",
+      "description": "あいさつと自己紹介ができる、いちばん基礎のレベルです。",
+      "status": "ready",
+      "topics": [
+        {
+          "id": "L1-T1",
+          "name": "あいさつ",
+          "nameEn": "Greetings",
+          "lessons": [
+            { "id": "L1-T1-001", "en": "Hello! How are you?", "ja": "こんにちは!調子はどう?", "vocab": [ { "en": "hello", "ja": "こんにちは" }, { "en": "how are you", "ja": "調子はどう?" } ] },
+            { "id": "L1-T1-002", "en": "I'm fine, thank you.", "ja": "元気です、ありがとう。", "vocab": [ { "en": "fine", "ja": "元気な" } ] },
+            { "id": "L1-T1-003", "en": "Good morning! Did you sleep well?", "ja": "おはよう!よく眠れた?", "vocab": [ { "en": "good morning", "ja": "おはよう" }, { "en": "sleep well", "ja": "よく眠る" } ] },
+            { "id": "L1-T1-004", "en": "See you tomorrow!", "ja": "また明日ね!", "vocab": [ { "en": "see you", "ja": "またね" }, { "en": "tomorrow", "ja": "明日" } ] }
+          ]
+        },
+        {
+          "id": "L1-T2",
+          "name": "自己紹介",
+          "nameEn": "Self-introduction",
+          "lessons": [
+            { "id": "L1-T2-001", "en": "My name is Tom.", "ja": "私の名前はトムです。", "vocab": [ { "en": "my name is", "ja": "私の名前は〜です" } ] },
+            { "id": "L1-T2-002", "en": "I am from Japan.", "ja": "私は日本出身です。", "vocab": [ { "en": "from", "ja": "〜出身" } ] },
+            { "id": "L1-T2-003", "en": "Nice to meet you.", "ja": "はじめまして。", "vocab": [ { "en": "nice to meet you", "ja": "はじめまして" } ] },
+            { "id": "L1-T2-004", "en": "I am a student.", "ja": "私は学生です。", "vocab": [ { "en": "student", "ja": "学生" } ] }
+          ]
+        },
+        {
+          "id": "L1-T3",
+          "name": "かんたんな質問",
+          "nameEn": "Simple questions",
+          "lessons": [
+            { "id": "L1-T3-001", "en": "What is your name?", "ja": "お名前は何ですか?", "vocab": [ { "en": "what is your name", "ja": "お名前は何ですか" } ] },
+            { "id": "L1-T3-002", "en": "Where are you from?", "ja": "出身はどこですか?", "vocab": [ { "en": "where are you from", "ja": "出身はどこですか" } ] },
+            { "id": "L1-T3-003", "en": "How old are you?", "ja": "おいくつですか?", "vocab": [ { "en": "how old", "ja": "何歳" } ] },
+            { "id": "L1-T3-004", "en": "Do you like coffee?", "ja": "コーヒーは好きですか?", "vocab": [ { "en": "do you like", "ja": "〜は好きですか" } ] }
+          ]
+        }
+      ]
+    },
+    { "id": 2, "title": "買い物・注文・道案内", "titleEn": "Shopping, Ordering & Directions", "description": "お店での買い物、注文、道を尋ねる・教える会話。", "status": "coming_soon", "topics": [] },
+    { "id": 3, "title": "日常の描写", "titleEn": "Daily Life & Routines", "description": "習慣・趣味・家族について話す。", "status": "coming_soon", "topics": [] },
+    { "id": 4, "title": "旅行・外出", "titleEn": "Travel & Going Out", "description": "交通機関・レストランなど外出先での会話。", "status": "coming_soon", "topics": [] },
+    { "id": 5, "title": "学校・職場の日常", "titleEn": "School & Work Life", "description": "学校や職場での日常的なやり取り、簡単な意見表明。", "status": "coming_soon", "topics": [] },
+    { "id": 6, "title": "身近な出来事・ニュースの説明", "titleEn": "Everyday News & Events", "description": "最近あった出来事やニュースを説明する。", "status": "coming_soon", "topics": [] },
+    { "id": 7, "title": "意見・気持ちの説明", "titleEn": "Opinions & Feelings", "description": "理由をつけて意見や気持ちを説明する。", "status": "coming_soon", "topics": [] },
+    { "id": 8, "title": "専門的な話題入門", "titleEn": "Intro to Specialized Topics", "description": "健康・環境・テクノロジーなど、少し専門的な話題の入り口。", "status": "coming_soon", "topics": [] },
+    { "id": 9, "title": "ニュース記事・エッセイ調", "titleEn": "News Articles & Essays", "description": "ニュース記事やエッセイのような文章を読み解く。", "status": "coming_soon", "topics": [] },
+    { "id": 10, "title": "ネイティブレベルの会話・文章", "titleEn": "Native-level Conversation & Writing", "description": "イディオムやニュアンスを含む、ネイティブレベルの表現。", "status": "coming_soon", "topics": [] }
+  ]
+}
